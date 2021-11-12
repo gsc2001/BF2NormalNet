@@ -8,11 +8,13 @@ from PIL import Image
 import torch
 import torch.nn.functional as F
 from eval import eval_net
+from run import run_net
 from normal_net import NormalNet
 from torch import nn
 from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 from utils.dataset import SynthiaDataset
+from utils.custom_dataset import CustomDataset
 
 
 def get_args():
@@ -77,6 +79,9 @@ if __name__ == "__main__":
             seg_masks_dir.format("test"),
             args.scale,
         )
+    else:
+        img_dir = args.dataset
+        test_dataset = CustomDataset(img_dir)
 
     test_loader = DataLoader(
         test_dataset, batch_size=1, shuffle=False, num_workers=1, pin_memory=True,
@@ -105,6 +110,11 @@ if __name__ == "__main__":
     l1_criterion = nn.L1Loss()
     logging.info("Model loaded. Starting evaluation.")
 
-    eval_net(
-        net, test_loader, device, writer=None, ckpt=ckpt, save=args.save,
-    )
+    if args.dataset == "synthia":
+        eval_net(
+            net, test_loader, device, writer=None, ckpt=ckpt, save=args.save,
+        )
+    else:
+        run_net(
+            net, test_loader, device, writer=None, ckpt=ckpt, save=args.save,
+        )
