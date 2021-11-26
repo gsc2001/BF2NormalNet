@@ -5,3 +5,4 @@ results
 .mypy_cache
 .vscode
 *.pth
+.ipynb_checkpoints/

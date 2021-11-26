@@ -28,6 +28,7 @@ class SynthiaDataset(Dataset):
             for file in sorted(listdir(rgb_dir))
             if not file.startswith(".")
         ]
+        print(self.ids)
 
         logging.info(f"Creating {rgb_dir} dataset with {len(self.ids)} examples")
 
@@ -66,9 +67,11 @@ class SynthiaDataset(Dataset):
     def __getitem__(self, i):
 
         idx = self.ids[i]
-        rgb_file = sorted(glob(self.rgb_dir + idx + ".*"))
-        normal_file = sorted(glob(self.normals_dir + idx + ".*"))
-        seg_mask_file = glob(self.seg_masks_dir + idx + ".*")
+        rgb_file = sorted(glob(os.path.join(self.rgb_dir, f'{idx}.*')))
+        normal_file = sorted(glob(os.path.join(self.normals_dir, f'{idx}.*')))
+        seg_mask_file = sorted(glob(os.path.join(self.seg_masks_dir, f'{idx}.*')))
+        # normal_file = sorted(glob(self.normals_dir + idx + ".*"))
+        # seg_mask_file = glob(self.seg_masks_dir + idx + ".*")
 
         assert (
             len(normal_file) == 1
@@ -83,7 +86,7 @@ class SynthiaDataset(Dataset):
 
         assert (
             rgb.size == normal_map.shape[0:2][::-1] == seg_mask.size
-        ), f"Image, normal map, and segmentation mask {idx} should be the same size, but are {img.size} and {mask.shape[0:2]}"
+        ), f"Image, normal map, and segmentation mask {idx} should be the same size, but are {rgb.size} and {seg_mask.shape[0:2]}"
 
         rgb = self.preprocess(rgb, self.scale)
         normal_map = self.preprocess_normals(normal_map)

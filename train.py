@@ -35,24 +35,25 @@ def train_net(
 
     net.train()
 
-    if args.dataset == "synthia":
-        rgb_dir = "data/synthia/rgb/{}/"
-        normals_dir = "data/synthia/normals/{}/"
-        seg_masks_dir = "data/synthia/seg_masks/{}/"
+    rgb_dir = os.path.join(args.dataset, 'rgb')
+    normals_dir = os.path.join(args.dataset, 'normals')
+    seg_masks_dir = os.path.join(args.dataset, 'seg_mask')
 
-        train_dataset = SynthiaDataset(
-            rgb_dir.format("train"),
-            normals_dir.format("train"),
-            seg_masks_dir.format("train"),
-            img_scale,
-        )
 
-        test_dataset = SynthiaDataset(
-            rgb_dir.format("test"),
-            normals_dir.format("test"),
-            seg_masks_dir.format("test"),
-            img_scale,
-        )
+    train_dataset = SynthiaDataset(
+        os.path.join(rgb_dir, 'train'),
+        os.path.join(normals_dir, 'train'),
+        os.path.join(seg_masks_dir, 'train'),
+        img_scale,
+    )
+
+    test_dataset = SynthiaDataset(
+        os.path.join(rgb_dir, 'test'),
+        os.path.join(normals_dir, 'test'),
+        os.path.join(seg_masks_dir, 'test'),
+        img_scale,
+    )
+
 
     train_loader = DataLoader(
         train_dataset,
@@ -198,7 +199,7 @@ def get_args():
         "--dataset",
         dest="dataset",
         type=str,
-        default="synthia",
+        required=True,
         help="Dataset to be used",
     )
     parser.add_argument(
