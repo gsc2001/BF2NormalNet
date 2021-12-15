@@ -6,3 +6,4 @@ results
 .vscode
 *.pth
 .ipynb_checkpoints/
+runs*

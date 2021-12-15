@@ -25,7 +25,7 @@ def get_args():
     parser.add_argument(
         "--model",
         "-m",
-        default="MODEL.pth",
+        required=True,
         metavar="FILE",
         help="Specify the file in which the model is stored",
     )
@@ -34,7 +34,7 @@ def get_args():
         "--dataset",
         dest="dataset",
         type=str,
-        default="synthia",
+        required=True,
         help="Dataset to be used",
     )
     parser.add_argument(
@@ -60,6 +60,13 @@ def get_args():
         help="Use pre-trained resnet encoder.",
         default=False,
     )
+    parser.add_argument(
+        "--eval",
+        "-e",
+        action="store_true",
+        help="Eval the network",
+        default=False
+    )
 
     return parser.parse_args()
 
@@ -68,26 +75,40 @@ if __name__ == "__main__":
     args = get_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-    if args.dataset == "synthia":
-        rgb_dir = "data/synthia/rgb/{}/"
-        normals_dir = "data/synthia/normals/{}/"
-        seg_masks_dir = "data/synthia/seg_masks/{}/"
+    # if args.dataset == "synthia":
+    #     rgb_dir = "data/synthia/rgb/{}/"
+    #     normals_dir = "data/synthia/normals/{}/"
+    #     seg_masks_dir = "data/synthia/seg_masks/{}/"
 
+    #     test_dataset = SynthiaDataset(
+    #         rgb_dir.format("test"),
+    #         normals_dir.format("test"),
+    #         seg_masks_dir.format("test"),
+    #         args.scale,
+    #     )
+    # else:
+    #     img_dir = args.dataset
+    #     test_dataset = CustomDataset(img_dir)
+    if args.eval:
+        rgb_dir = os.path.join(args.dataset, 'rgb')
+        normals_dir = os.path.join(args.dataset, 'normals')
+        seg_masks_dir = os.path.join(args.dataset, 'seg_mask')
         test_dataset = SynthiaDataset(
-            rgb_dir.format("test"),
-            normals_dir.format("test"),
-            seg_masks_dir.format("test"),
+            os.path.join(rgb_dir, 'test'),
+            os.path.join(normals_dir, 'test'),
+            os.path.join(seg_masks_dir, 'test'),
             args.scale,
         )
     else:
-        img_dir = args.dataset
-        test_dataset = CustomDataset(img_dir)
+        test_dataset = CustomDataset(args.dataset, args.scale)
+
 
     test_loader = DataLoader(
         test_dataset, batch_size=1, shuffle=False, num_workers=1, pin_memory=True,
     )
 
     ckpt = args.model[5:]
+    print(ckpt)
     if args.save:
         os.makedirs(f"results/{ckpt}", exist_ok=True)  # for saving results
 
@@ -110,7 +131,7 @@ if __name__ == "__main__":
     l1_criterion = nn.L1Loss()
     logging.info("Model loaded. Starting evaluation.")
 
-    if args.dataset == "synthia":
+    if args.eval:
         eval_net(
             net, test_loader, device, writer=None, ckpt=ckpt, save=args.save,
         )
